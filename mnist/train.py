@@ -11,6 +11,26 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
+# PyTorch model
+class MyModel(nn.Module):
+    def __init__(self, input_size=784, hidden_size=128, output_size=10):
+        super(MyModel, self).__init__()
+        self.fc1 = nn.Linear(input_size, 10)
+        self.relu1 = nn.ReLU()
+        self.fc2 = nn.Linear(10, hidden_size)
+        self.relu2 = nn.ReLU()
+        self.dropout = nn.Dropout(0.2)
+        self.fc3 = nn.Linear(hidden_size, output_size)
+        
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.relu1(x)
+        x = self.fc2(x)
+        x = self.relu2(x)
+        x = self.dropout(x)
+        x = self.fc3(x)
+        return x
+
 
 def train(base_directory, train_path, validation_path, epochs=50, batch_size=32, learning_rate=0.01):
     X_train = pd.read_csv(Path(train_path) / "train.csv")
@@ -27,14 +47,7 @@ def train(base_directory, train_path, validation_path, epochs=50, batch_size=32,
     validation_dataset = TensorDataset(torch.tensor(X_validation.values, dtype=torch.float32), torch.tensor(y_validation.values, dtype=torch.long))
     validation_loader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
 
-    model = nn.Sequential(
-        nn.Linear(X_train.shape[1], 10),
-        nn.ReLU(),
-        nn.Linear(10, 128),
-        nn.ReLU(),
-        nn.Dropout(0.2),
-        nn.Linear(128, 10)
-    )
+    model = MyModel(input_size=X_train.shape[1], hidden_size=128, output_size=10)
 
     # Define the loss function
     loss_fn = nn.CrossEntropyLoss()
